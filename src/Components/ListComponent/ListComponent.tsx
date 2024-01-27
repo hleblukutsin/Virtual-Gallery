@@ -1,22 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  FixedSizeGrid,
-  FixedSizeList,
-  GridChildComponentProps,
-  ListChildComponentProps,
-} from 'react-window';
+import { FixedSizeGrid, GridChildComponentProps } from 'react-window';
 import { isEmpty } from 'lodash';
 
-import RowComponent from '../RowComponent/RowComponent';
-import { ICharacter } from './listComponent.interface';
 import { getCharacterElementNumber } from '../../utils/utils';
+import { ICharacter } from './listComponent.interface';
 
-// import items from './mock.json';
-
-const Row = ({ index, style }: ListChildComponentProps) => {
-  console.log(123, 'in raw');
-  return <RowComponent image={''} num={index} style={style} />;
-};
+import CellCard from '../CellCard/CellCard';
 
 const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
@@ -33,9 +22,14 @@ const ListComponent = () => {
 
   const Cell = ({ rowIndex, columnIndex, style }: GridChildComponentProps) => {
     const currentElementNumber = getCharacterElementNumber(rowIndex, columnIndex);
+    const character: ICharacter | null =
+      charactersList && !isEmpty(charactersList[currentElementNumber])
+        ? charactersList[currentElementNumber]
+        : null;
+
     return (
       <div style={style}>
-        {charactersList ? charactersList[currentElementNumber].name : 'Loading'}
+        <CellCard character={character} />
       </div>
     );
   };
@@ -48,8 +42,7 @@ const ListComponent = () => {
       columnCount={2}
       columnWidth={490}
       rowCount={charactersCout ? charactersCout : 0}
-      rowHeight={150}
-      itemData={123}
+      rowHeight={400}
     >
       {Cell}
     </FixedSizeGrid>
