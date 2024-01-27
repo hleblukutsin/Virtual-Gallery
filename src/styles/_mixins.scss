@@ -1,0 +1,38 @@
+@mixin scroll-bar {
+  &::-webkit-scrollbar {
+    height: 1px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.5;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+}
+
+@mixin vertical-scroll-bar($bg: #0f0f13) {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: $bg;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #40404a;
+    border: 3px solid $bg;
+    border-radius: 10px;
+  }
+}
+
+@mixin gap-fallback($size) {
+  & > * + * {
+    margin-top: $size;
+  }
+}

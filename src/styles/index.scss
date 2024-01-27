@@ -1,0 +1,20 @@
+@import "vars.scss";
+@import "_mixins.scss";
+
+* {
+  box-sizing: border-box;
+  font-family: var(--font-primary);
+}
+
+body {
+  // @include vertical-scroll-bar;
+
+  button,
+  input {
+    &:hover,
+    &:focus,
+    &:active {
+      outline: none;
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "extends": [
+    "airbnb/hooks",
+    "airbnb-typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:jest/recommended",
+    "prettier"
+  ],
+  "plugins": ["prettier", "import"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "rules": {
+    "react/jsx-key": "error",
+    "object-curly-spacing": ["warn", "always"],
+    "prettier/prettier": ["error", { "quoteProps": "as-needed" }],
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "**/*.test.js",
+          "**/*.test.jsx",
+          "**/*.test.ts",
+          "**/*.test.tsx",
+          "src/tests/**/*"
+        ]
+      }
+    ],
+    "@typescript-eslint/lines-between-class-members": "off",
+    "import/prefer-default-export": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/require-default-props": "off",
+    "react/react-in-jsx-scope": "off",
+    "class-methods-use-this": "off",
+    "consistent-return": "off",
+    "arrow-body-style": "off",
+    "react/prop-types": "off",
+    "no-console": "warn",
+    "react-hooks/exhaustive-deps": "off"
+  },
+  "env": {
+    "es6": true,
+    "commonjs": true,
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
+  "globals": {
+    "FileReader": true,
+    "FormData": true,
+    "Blob": true
+  }
+}
