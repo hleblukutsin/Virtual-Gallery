@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FixedSizeGrid, GridChildComponentProps } from 'react-window';
 import { isEmpty } from 'lodash';
 
@@ -9,16 +9,20 @@ import CellCard from '../CellCard/CellCard';
 
 const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
+  const [charactersCounter, setCharactersCounter] = useState<number>(10);
 
   useEffect(() => {
     fetch('https://rickandmortyapi.com/api/character')
       .then(data => data.json())
-      .then(data => setCharactersList(data.results));
-  }, []);
+      .then(data => {
+        setCharactersList(data.results);
 
-  const charactersCout = isEmpty(charactersList)
-    ? 10
-    : charactersList && charactersList?.length / 2;
+        if (charactersList) {
+          setCharactersCounter(charactersList?.length / 2);
+        }
+      })
+      .catch(() => setCharactersCounter(0));
+  }, []);
 
   const Cell = ({ rowIndex, columnIndex, style }: GridChildComponentProps) => {
     const currentElementNumber = getCharacterElementNumber(rowIndex, columnIndex);
@@ -41,7 +45,7 @@ const ListComponent = () => {
       className="list-component"
       columnCount={2}
       columnWidth={360}
-      rowCount={charactersCout ? charactersCout : 0}
+      rowCount={charactersCounter}
       rowHeight={400}
     >
       {Cell}
