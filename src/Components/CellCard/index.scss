@@ -1,8 +1,10 @@
 .cell-card {
   height: 380px;
-  width: 470px;
+  width: 320px;
   border-radius: 15px;
   background: #ebebeb;
+  border: 2px solid #ebebeb;
+  box-shadow: 5px 0 5px -5px rgba(88, 88, 88, 0.5), 0 5px 5px -5px rgba(99, 99, 99, 0.5);
 
   display: flex;
   align-items: center;

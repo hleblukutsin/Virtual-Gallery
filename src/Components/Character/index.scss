@@ -1,2 +1,15 @@
 .character {
+  .avatar {
+    img {
+      border-radius: 100%;
+    }
+  }
+
+  .info-block {
+    p {
+      margin: 3px 0;
+      font-size: 14px;
+      color: rgb(95, 95, 95);
+    }
+  }
 }

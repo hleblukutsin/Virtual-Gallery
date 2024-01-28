@@ -3,7 +3,7 @@ import { FixedSizeGrid, GridChildComponentProps } from 'react-window';
 import { isEmpty } from 'lodash';
 
 import { getCharacterElementNumber } from '../../utils/utils';
-import { ICharacter } from './listComponent.interface';
+import { ICharacter } from './listComponent.interfaces';
 
 import CellCard from '../CellCard/CellCard';
 
@@ -36,11 +36,11 @@ const ListComponent = () => {
 
   return (
     <FixedSizeGrid
-      height={500}
-      width={1000}
+      height={850}
+      width={740}
       className="list-component"
       columnCount={2}
-      columnWidth={490}
+      columnWidth={360}
       rowCount={charactersCout ? charactersCout : 0}
       rowHeight={400}
     >
