@@ -1,58 +1,74 @@
-import React, { useEffect, useState } from 'react';
-import {
-  FixedSizeGrid,
-  FixedSizeList,
-  GridChildComponentProps,
-  ListChildComponentProps,
-} from 'react-window';
-import { isEmpty } from 'lodash';
+import { useEffect, useState } from 'react';
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import InfiniteLoader from 'react-window-infinite-loader';
+import { isEmpty, isNil } from 'lodash';
 
-import RowComponent from '../RowComponent/RowComponent';
-import { ICharacter } from './listComponent.interface';
-import { getCharacterElementNumber } from '../../utils/utils';
+import { ICharacter } from './listComponent.interfaces';
 
-// import items from './mock.json';
-
-const Row = ({ index, style }: ListChildComponentProps) => {
-  console.log(123, 'in raw');
-  return <RowComponent image={''} num={index} style={style} />;
-};
+import CellCard from '../CellCard/CellCard';
 
 const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
+  const [charactersCounter, setCharactersCounter] = useState<number>(20);
+  const itemCount = true ? charactersCounter + 1 : charactersCounter;
 
   useEffect(() => {
     fetch('https://rickandmortyapi.com/api/character')
       .then(data => data.json())
-      .then(data => setCharactersList(data.results));
+      .then(data => {
+        setCharactersList(data.results);
+        setCharactersCounter(data.results.length);
+      })
+      .catch(() => setCharactersCounter(0));
   }, []);
 
-  const charactersCout = isEmpty(charactersList)
-    ? 10
-    : charactersList && charactersList?.length / 2;
+  const Cell = ({ index, style }: ListChildComponentProps) => {
+    const character: ICharacter | null =
+      charactersList && !isEmpty(charactersList[index]) ? charactersList[index] : null;
 
-  const Cell = ({ rowIndex, columnIndex, style }: GridChildComponentProps) => {
-    const currentElementNumber = getCharacterElementNumber(rowIndex, columnIndex);
     return (
       <div style={style}>
-        {charactersList ? charactersList[currentElementNumber].name : 'Loading'}
+        <CellCard character={character} />
       </div>
     );
   };
 
+  const loadMore = () => {
+    fetch('https://rickandmortyapi.com/api/character')
+      .then(data => data.json())
+      .then(data => {
+        const prevData = isNil(charactersList) ? [] : charactersList;
+        setCharactersList([...prevData, ...data.results]);
+
+        if (charactersList) {
+          setCharactersCounter(charactersList?.length + data.results.length);
+        }
+      })
+      .catch(() => setCharactersCounter(0));
+  };
+
   return (
-    <FixedSizeGrid
-      height={500}
-      width={1000}
-      className="list-component"
-      columnCount={2}
-      columnWidth={490}
-      rowCount={charactersCout ? charactersCout : 0}
-      rowHeight={150}
-      itemData={123}
+    <InfiniteLoader
+      isItemLoaded={index => index < charactersCounter}
+      itemCount={itemCount}
+      loadMoreItems={loadMore}
     >
-      {Cell}
-    </FixedSizeGrid>
+      {({ onItemsRendered, ref }) => {
+        return (
+          <FixedSizeList
+            height={850}
+            width={740}
+            className="list-component"
+            itemCount={charactersCounter}
+            itemSize={400}
+            onItemsRendered={onItemsRendered}
+            ref={ref}
+          >
+            {Cell}
+          </FixedSizeList>
+        );
+      }}
+    </InfiniteLoader>
   );
 };
 
