@@ -1,73 +1,95 @@
 import { useEffect, useState } from 'react';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { isEmpty, isNil } from 'lodash';
 
 import { ICharacter } from './listComponent.interfaces';
 
-import CellCard from '../CellCard/CellCard';
+import RowComponent from '../RowComponent/RowComponent';
 
 const ListComponent = () => {
-  const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
+  const [charactersList, setCharactersList] = useState<ICharacter[] | null>(null);
   const [charactersCounter, setCharactersCounter] = useState<number>(20);
-  const itemCount = true ? charactersCounter + 1 : charactersCounter;
+  const [nextPage, setNextPage] = useState<string | null>(null);
+
+  const windowHeight = window.innerHeight - 60;
+  const itemHeight = 400;
 
   useEffect(() => {
-    fetch('https://rickandmortyapi.com/api/character')
-      .then(data => data.json())
-      .then(data => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://rickandmortyapi.com/api/character');
+        const data = await response.json();
+
+        setNextPage(data.info.next);
         setCharactersList(data.results);
-        setCharactersCounter(data.results.length);
-      })
-      .catch(() => setCharactersCounter(0));
+        setCharactersCounter(data.results.length / 2);
+      } catch (error) {
+        setCharactersCounter(0);
+      }
+    };
+
+    setTimeout(() => {
+      fetchData();
+    }, 1000);
   }, []);
 
-  const Cell = ({ index, style }: ListChildComponentProps) => {
-    const character: ICharacter | null =
-      charactersList && !isEmpty(charactersList[index]) ? charactersList[index] : null;
+  const Row = ({ index, style }: ListChildComponentProps) => {
+    const getCharactersRawArray = () => {
+      if (charactersList) {
+        const firstColomnIndex = index * 2;
+        const secondColomnIndex = index * 2 + 1;
+
+        return [charactersList[firstColomnIndex], charactersList[secondColomnIndex]];
+      }
+
+      return [null, null];
+    };
 
     return (
       <div style={style}>
-        <CellCard character={character} />
+        <RowComponent charactersRawArray={getCharactersRawArray()} />
       </div>
     );
   };
 
   const loadMore = () => {
-    fetch('https://rickandmortyapi.com/api/character')
-      .then(data => data.json())
-      .then(data => {
-        const prevData = isNil(charactersList) ? [] : charactersList;
-        setCharactersList([...prevData, ...data.results]);
+    setTimeout(async () => {
+      if (nextPage) {
+        try {
+          const response = await fetch(nextPage);
+          const data = await response.json();
 
-        if (charactersList) {
-          setCharactersCounter(charactersList?.length + data.results.length);
+          if (charactersList) {
+            setNextPage(data.info.next);
+            setCharactersList([...charactersList, ...data.results]);
+            setCharactersCounter(prevCounter => prevCounter + data.results.length / 2);
+          }
+        } catch (error) {
+          setCharactersCounter(prevCounter => prevCounter);
         }
-      })
-      .catch(() => setCharactersCounter(0));
+      }
+    }, 500);
   };
 
   return (
     <InfiniteLoader
       isItemLoaded={index => index < charactersCounter}
-      itemCount={itemCount}
+      itemCount={charactersCounter + 1}
       loadMoreItems={loadMore}
     >
-      {({ onItemsRendered, ref }) => {
-        return (
-          <FixedSizeList
-            height={850}
-            width={740}
-            className="list-component"
-            itemCount={charactersCounter}
-            itemSize={400}
-            onItemsRendered={onItemsRendered}
-            ref={ref}
-          >
-            {Cell}
-          </FixedSizeList>
-        );
-      }}
+      {({ onItemsRendered, ref }) => (
+        <FixedSizeList
+          height={windowHeight}
+          width="100%"
+          className="list-component"
+          itemCount={charactersCounter}
+          itemSize={itemHeight}
+          onItemsRendered={onItemsRendered}
+          ref={ref}
+        >
+          {Row}
+        </FixedSizeList>
+      )}
     </InfiniteLoader>
   );
 };
