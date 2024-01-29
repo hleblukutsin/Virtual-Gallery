@@ -7,67 +7,66 @@ import { ICharacter } from './listComponent.interfaces';
 import RowComponent from '../RowComponent/RowComponent';
 
 const ListComponent = () => {
-  const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
+  const [charactersList, setCharactersList] = useState<ICharacter[] | null>(null);
   const [charactersCounter, setCharactersCounter] = useState<number>(20);
   const [nextPage, setNextPage] = useState<string | null>(null);
 
   const windowHeight = window.innerHeight - 60;
+  const itemHeight = 400;
 
-  const itemCount = true ? charactersCounter + 1 : charactersCounter;
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://rickandmortyapi.com/api/character');
+        const data = await response.json();
+
+        setNextPage(data.info.next);
+        setCharactersList(data.results);
+        setCharactersCounter(data.results.length / 2);
+      } catch (error) {
+        setCharactersCounter(0);
+      }
+    };
+
     setTimeout(() => {
-      fetch('https://rickandmortyapi.com/api/character')
-        .then(data => data.json())
-        .then(data => {
-          setNextPage(data.info.next);
-          setCharactersList(data.results);
-          setCharactersCounter(data.results.length / 2);
-        })
-        .catch(() => setCharactersCounter(0));
+      fetchData();
     }, 1000);
   }, []);
 
   const Row = ({ index, style }: ListChildComponentProps) => {
-    if (charactersList) {
-      const isIndexSmallerList = index * 2 + 1 < charactersList.length;
-
-      if (isIndexSmallerList) {
+    const getCharactersRawArray = () => {
+      if (charactersList) {
         const firstColomnIndex = index * 2;
         const secondColomnIndex = index * 2 + 1;
 
-        const charactersRawArray = [
-          charactersList[firstColomnIndex],
-          charactersList[secondColomnIndex],
-        ];
-
-        return (
-          <div style={style}>
-            <RowComponent charactersRawArray={charactersRawArray} />
-          </div>
-        );
+        return [charactersList[firstColomnIndex], charactersList[secondColomnIndex]];
       }
-    }
+
+      return [null, null];
+    };
 
     return (
       <div style={style}>
-        <RowComponent charactersRawArray={[null, null]} />
+        <RowComponent charactersRawArray={getCharactersRawArray()} />
       </div>
     );
   };
 
   const loadMore = () => {
-    setTimeout(() => {
+    setTimeout(async () => {
       if (nextPage) {
-        fetch(nextPage)
-          .then(data => data.json())
-          .then(data => {
-            if (charactersList) {
-              setNextPage(data.info.next);
-              setCharactersList([...charactersList, ...data.results]);
-              setCharactersCounter(charactersCounter + data.results.length / 2);
-            }
-          })
-          .catch(() => setCharactersCounter(charactersCounter));
+        try {
+          const response = await fetch(nextPage);
+          const data = await response.json();
+
+          if (charactersList) {
+            setNextPage(data.info.next);
+            setCharactersList([...charactersList, ...data.results]);
+            setCharactersCounter(prevCounter => prevCounter + data.results.length / 2);
+          }
+        } catch (error) {
+          setCharactersCounter(prevCounter => prevCounter);
+        }
       }
     }, 500);
   };
@@ -75,24 +74,22 @@ const ListComponent = () => {
   return (
     <InfiniteLoader
       isItemLoaded={index => index < charactersCounter}
-      itemCount={itemCount}
+      itemCount={charactersCounter + 1}
       loadMoreItems={loadMore}
     >
-      {({ onItemsRendered, ref }) => {
-        return (
-          <FixedSizeList
-            height={windowHeight}
-            width={'100%'}
-            className="list-component"
-            itemCount={charactersCounter}
-            itemSize={400}
-            onItemsRendered={onItemsRendered}
-            ref={ref}
-          >
-            {Row}
-          </FixedSizeList>
-        );
-      }}
+      {({ onItemsRendered, ref }) => (
+        <FixedSizeList
+          height={windowHeight}
+          width="100%"
+          className="list-component"
+          itemCount={charactersCounter}
+          itemSize={itemHeight}
+          onItemsRendered={onItemsRendered}
+          ref={ref}
+        >
+          {Row}
+        </FixedSizeList>
+      )}
     </InfiniteLoader>
   );
 };

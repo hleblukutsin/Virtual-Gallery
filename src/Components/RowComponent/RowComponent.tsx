@@ -11,11 +11,13 @@ interface IRowComponentProps {
 }
 
 const RowComponent = ({ charactersRawArray }: IRowComponentProps) => {
-  const characters = charactersRawArray.map((character, index) => (
-    <CellCard key={index} character={character} />
-  ));
-
-  return <div className="row">{characters}</div>;
+  return (
+    <div className="row">
+      {charactersRawArray.map((character, index) => (
+        <CellCard key={index} character={character} />
+      ))}
+    </div>
+  );
 };
 
 export default RowComponent;

@@ -1,7 +1,9 @@
-import { ICharacter } from '../ListComponent/listComponent.interfaces';
-import React, { useState } from 'react';
-import './index.scss';
+import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
+
+import { ICharacter } from '../ListComponent/listComponent.interfaces';
+
+import './index.scss';
 
 interface ICharacterProps {
   character: ICharacter;
