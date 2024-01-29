@@ -6,6 +6,7 @@ import { isEmpty, isNil } from 'lodash';
 import { ICharacter } from './listComponent.interfaces';
 
 import CellCard from '../CellCard/CellCard';
+import RowComponent from '../RowComponent/RowComponent';
 
 const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
@@ -17,34 +18,51 @@ const ListComponent = () => {
       .then(data => data.json())
       .then(data => {
         setCharactersList(data.results);
-        setCharactersCounter(data.results.length);
+        setCharactersCounter(data.results.length / 2);
       })
       .catch(() => setCharactersCounter(0));
   }, []);
 
-  const Cell = ({ index, style }: ListChildComponentProps) => {
-    const character: ICharacter | null =
-      charactersList && !isEmpty(charactersList[index]) ? charactersList[index] : null;
+  const Row = ({ index, style }: ListChildComponentProps) => {
+    if (charactersList) {
+      const isIndexSmallerList = index * 2 + 1 < charactersList.length;
+
+      if (isIndexSmallerList) {
+        const firstColomnIndex = index * 2;
+        const secondColomnIndex = index * 2 + 1;
+
+        console.log(firstColomnIndex, secondColomnIndex);
+        const charactersRawArray = [
+          charactersList[firstColomnIndex],
+          charactersList[secondColomnIndex],
+        ];
+
+        return (
+          <div style={style}>
+            <RowComponent charactersRawArray={charactersRawArray} />
+          </div>
+        );
+      }
+    }
 
     return (
       <div style={style}>
-        <CellCard character={character} />
+        <RowComponent charactersRawArray={[null, null]} />
       </div>
     );
   };
 
   const loadMore = () => {
+    console.log(2);
     fetch('https://rickandmortyapi.com/api/character')
       .then(data => data.json())
       .then(data => {
-        const prevData = isNil(charactersList) ? [] : charactersList;
-        setCharactersList([...prevData, ...data.results]);
-
         if (charactersList) {
-          setCharactersCounter(charactersList?.length + data.results.length);
+          setCharactersList([...charactersList, ...data.results]);
+          setCharactersCounter(charactersCounter + data.results.length / 2);
         }
       })
-      .catch(() => setCharactersCounter(0));
+      .catch(() => setCharactersCounter(charactersCounter));
   };
 
   return (
@@ -57,14 +75,14 @@ const ListComponent = () => {
         return (
           <FixedSizeList
             height={850}
-            width={740}
+            width={'100%'}
             className="list-component"
             itemCount={charactersCounter}
             itemSize={400}
             onItemsRendered={onItemsRendered}
             ref={ref}
           >
-            {Cell}
+            {Row}
           </FixedSizeList>
         );
       }}
