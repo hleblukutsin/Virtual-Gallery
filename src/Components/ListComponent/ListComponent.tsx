@@ -11,16 +11,20 @@ const ListComponent = () => {
   const [charactersCounter, setCharactersCounter] = useState<number>(20);
   const [nextPage, setNextPage] = useState<string | null>(null);
 
+  const windowHeight = window.innerHeight - 60;
+
   const itemCount = true ? charactersCounter + 1 : charactersCounter;
   useEffect(() => {
-    fetch('https://rickandmortyapi.com/api/character')
-      .then(data => data.json())
-      .then(data => {
-        setNextPage(data.info.next);
-        setCharactersList(data.results);
-        setCharactersCounter(data.results.length / 2);
-      })
-      .catch(() => setCharactersCounter(0));
+    setTimeout(() => {
+      fetch('https://rickandmortyapi.com/api/character')
+        .then(data => data.json())
+        .then(data => {
+          setNextPage(data.info.next);
+          setCharactersList(data.results);
+          setCharactersCounter(data.results.length / 2);
+        })
+        .catch(() => setCharactersCounter(0));
+    }, 1000);
   }, []);
 
   const Row = ({ index, style }: ListChildComponentProps) => {
@@ -52,18 +56,20 @@ const ListComponent = () => {
   };
 
   const loadMore = () => {
-    if (nextPage) {
-      fetch(nextPage)
-        .then(data => data.json())
-        .then(data => {
-          if (charactersList) {
-            setNextPage(data.info.next);
-            setCharactersList([...charactersList, ...data.results]);
-            setCharactersCounter(charactersCounter + data.results.length / 2);
-          }
-        })
-        .catch(() => setCharactersCounter(charactersCounter));
-    }
+    setTimeout(() => {
+      if (nextPage) {
+        fetch(nextPage)
+          .then(data => data.json())
+          .then(data => {
+            if (charactersList) {
+              setNextPage(data.info.next);
+              setCharactersList([...charactersList, ...data.results]);
+              setCharactersCounter(charactersCounter + data.results.length / 2);
+            }
+          })
+          .catch(() => setCharactersCounter(charactersCounter));
+      }
+    }, 500);
   };
 
   return (
@@ -75,7 +81,7 @@ const ListComponent = () => {
       {({ onItemsRendered, ref }) => {
         return (
           <FixedSizeList
-            height={850}
+            height={windowHeight}
             width={'100%'}
             className="list-component"
             itemCount={charactersCounter}
