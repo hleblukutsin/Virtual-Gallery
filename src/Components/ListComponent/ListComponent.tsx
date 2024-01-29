@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
-import { isEmpty, isNil } from 'lodash';
 
 import { ICharacter } from './listComponent.interfaces';
 
-import CellCard from '../CellCard/CellCard';
 import RowComponent from '../RowComponent/RowComponent';
 
 const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<null | ICharacter[]>(null);
   const [charactersCounter, setCharactersCounter] = useState<number>(20);
-  const itemCount = true ? charactersCounter + 1 : charactersCounter;
+  const [nextPage, setNextPage] = useState<string | null>(null);
 
+  const itemCount = true ? charactersCounter + 1 : charactersCounter;
   useEffect(() => {
     fetch('https://rickandmortyapi.com/api/character')
       .then(data => data.json())
       .then(data => {
+        setNextPage(data.info.next);
         setCharactersList(data.results);
         setCharactersCounter(data.results.length / 2);
       })
@@ -31,7 +31,6 @@ const ListComponent = () => {
         const firstColomnIndex = index * 2;
         const secondColomnIndex = index * 2 + 1;
 
-        console.log(firstColomnIndex, secondColomnIndex);
         const charactersRawArray = [
           charactersList[firstColomnIndex],
           charactersList[secondColomnIndex],
@@ -53,16 +52,18 @@ const ListComponent = () => {
   };
 
   const loadMore = () => {
-    console.log(2);
-    fetch('https://rickandmortyapi.com/api/character')
-      .then(data => data.json())
-      .then(data => {
-        if (charactersList) {
-          setCharactersList([...charactersList, ...data.results]);
-          setCharactersCounter(charactersCounter + data.results.length / 2);
-        }
-      })
-      .catch(() => setCharactersCounter(charactersCounter));
+    if (nextPage) {
+      fetch(nextPage)
+        .then(data => data.json())
+        .then(data => {
+          if (charactersList) {
+            setNextPage(data.info.next);
+            setCharactersList([...charactersList, ...data.results]);
+            setCharactersCounter(charactersCounter + data.results.length / 2);
+          }
+        })
+        .catch(() => setCharactersCounter(charactersCounter));
+    }
   };
 
   return (
