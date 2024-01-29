@@ -1,9 +1,10 @@
 import { isNil } from 'lodash';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import Character from '../Character/Character';
 
 import { ICharacter } from '../ListComponent/listComponent.interfaces';
+
+import Character from '../Character/Character';
 
 import './index.scss';
 
