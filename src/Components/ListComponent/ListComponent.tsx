@@ -22,9 +22,9 @@ const ListComponent = () => {
       fetch(`https://rickandmortyapi.com/api/character`)
         .then(response => response.json())
         .then(data => {
-          const newListArray: (ICharacter | null)[] | null = [...charactersList];
-          newListArray.splice(0, 20, ...data.results);
-          setCharactersList(newListArray);
+          // const newListArray: (ICharacter | null)[] | null = [...charactersList];
+          charactersList.splice(0, 20, ...data.results);
+          setCharactersList(charactersList);
           setApiInfo({ pages: data.info.pages, count: data.info.count });
         })
         .catch(() => {
@@ -33,9 +33,11 @@ const ListComponent = () => {
         });
     };
 
-    fetchData();
+    setTimeout(() => {
+      fetchData();
+    }, 1000);
   }, []);
-
+  console.log(setCharactersList);
   const Row = ({ index, style }: ListChildComponentProps) => {
     const getCharactersRawArray = () => {
       const firstColomnIndex = index * 2;
