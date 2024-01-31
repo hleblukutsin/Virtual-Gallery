@@ -12,7 +12,7 @@ const ListComponent = () => {
   const [charactersList, setCharactersList] = useState<(ICharacter | null)[]>(emptyCardsArray);
   const [charactersCounter, setCharactersCounter] = useState<number>(10);
   const [pageNumber, setPageNumber] = useState(1);
-  const [apiInfo, setApiInfo] = useState({ count: 0, pages: 0 });
+  const [apiInfo, setApiInfo] = useState({ count: 826, pages: 42 });
 
   const windowHeight = window.innerHeight - 60;
   const itemHeight = 400;
@@ -33,9 +33,7 @@ const ListComponent = () => {
         });
     };
 
-    setTimeout(() => {
-      fetchData();
-    }, 1000);
+    fetchData();
   }, []);
 
   const Row = ({ index, style }: ListChildComponentProps) => {
