@@ -3,29 +3,33 @@ import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 
 import { ICharacter } from './listComponent.interfaces';
+import { generateNullsArray } from '../../utils/index.utils';
 
 import RowComponent from '../RowComponent/RowComponent';
 
 const ListComponent = () => {
-  const [charactersList, setCharactersList] = useState<ICharacter[] | null>(null);
-  const [charactersCounter, setCharactersCounter] = useState<number>(20);
-  const [nextPage, setNextPage] = useState<string | null>(null);
+  const emptyCardsArray = generateNullsArray(826);
+  const [charactersList, setCharactersList] = useState<(ICharacter | null)[]>(emptyCardsArray);
+  const [charactersCounter, setCharactersCounter] = useState<number>(10);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [apiInfo, setApiInfo] = useState({ count: 826, pages: 42 });
 
   const windowHeight = window.innerHeight - 60;
   const itemHeight = 400;
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://rickandmortyapi.com/api/character');
-        const data = await response.json();
-
-        setNextPage(data.info.next);
-        setCharactersList(data.results);
-        setCharactersCounter(data.results.length / 2);
-      } catch (error) {
-        setCharactersCounter(0);
-      }
+    const fetchData = () => {
+      fetch(`https://rickandmortyapi.com/api/character`)
+        .then(response => response.json())
+        .then(data => {
+          charactersList.splice(0, 20, ...data.results);
+          setCharactersList(charactersList);
+          setApiInfo({ pages: data.info.pages, count: data.info.count });
+        })
+        .catch(() => {
+          setCharactersList([]);
+          setCharactersCounter(0);
+        });
     };
 
     setTimeout(() => {
@@ -35,14 +39,10 @@ const ListComponent = () => {
 
   const Row = ({ index, style }: ListChildComponentProps) => {
     const getCharactersRawArray = () => {
-      if (charactersList) {
-        const firstColomnIndex = index * 2;
-        const secondColomnIndex = index * 2 + 1;
+      const firstColomnIndex = index * 2;
+      const secondColomnIndex = index * 2 + 1;
 
-        return [charactersList[firstColomnIndex], charactersList[secondColomnIndex]];
-      }
-
-      return [null, null];
+      return [charactersList[firstColomnIndex], charactersList[secondColomnIndex]];
     };
 
     return (
@@ -53,22 +53,28 @@ const ListComponent = () => {
   };
 
   const loadMore = () => {
-    setTimeout(async () => {
-      if (nextPage) {
-        try {
-          const response = await fetch(nextPage);
-          const data = await response.json();
-
-          if (charactersList) {
-            setNextPage(data.info.next);
-            setCharactersList([...charactersList, ...data.results]);
-            setCharactersCounter(prevCounter => prevCounter + data.results.length / 2);
-          }
-        } catch (error) {
-          setCharactersCounter(prevCounter => prevCounter);
-        }
+    if (apiInfo.pages > pageNumber) {
+      setPageNumber(prevNumber => prevNumber + 1);
+      const divisionReminder = apiInfo.count % 20;
+      if (pageNumber + 1 < apiInfo.pages) {
+        setCharactersCounter(prevCounter => prevCounter + 10);
+      } else {
+        setCharactersCounter(prevCounter => prevCounter + divisionReminder / 2);
       }
-    }, 500);
+
+      fetch(`https://rickandmortyapi.com/api/character/?page=${pageNumber + 1}`)
+        .then(response => response.json())
+        .then(data => {
+          if (apiInfo.pages < pageNumber + 1) {
+            charactersList.splice(pageNumber * 20, 20, ...data.results);
+          } else {
+            charactersList.splice(pageNumber * 20, divisionReminder, ...data.results);
+          }
+
+          setCharactersList(charactersList);
+        })
+        .catch(() => setCharactersCounter(prevCounter => prevCounter));
+    }
   };
 
   return (
@@ -76,6 +82,7 @@ const ListComponent = () => {
       isItemLoaded={index => index < charactersCounter}
       itemCount={charactersCounter + 1}
       loadMoreItems={loadMore}
+      threshold={1}
     >
       {({ onItemsRendered, ref }) => (
         <FixedSizeList
